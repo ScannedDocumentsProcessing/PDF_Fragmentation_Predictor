@@ -129,6 +129,7 @@ def main():
 
         print(f"Epoch {epoch+1}, Loss: {running_loss / len(train_loader):.4f}")
     
+    # Set the model to evaluation mode 
     model.eval()
     correct = 0
     total = 0
@@ -147,7 +148,15 @@ def main():
     print(f"Validation Accuracy: {correct / total * 100:.2f}%")
 
     # save the model using BentoML to its model store
-    bentoml.pytorch.save_model("pdf_fragmentation_classifier", model)
+    bentoml.pytorch.save_model(
+        "pdf_fragmentation_classifier",
+        model,
+        custom_objects = {
+            # TODO create and implement the two methods
+            #"preprocess": preprocess,
+            #"postprocess": postprocess,
+        }
+    )
 
     # export the model from the model store to the local model folder
     modelFolder.mkdir(parents=True, exist_ok=True)
@@ -155,6 +164,8 @@ def main():
         "pdf_fragmentation_classifier:latest",
         f"{modelFolder}/pdf_fragmentation_classifier.bentomodel",
     )
+
+    print(f"\nModel saved at {modelFolder.absolute()}")
 
     
 if __name__ == "__main__":
