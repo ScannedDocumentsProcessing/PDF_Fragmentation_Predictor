@@ -4,7 +4,7 @@ import numpy as np
 import sys
 from interfaces.pdffileloader import PDFFileLoader
 
-class PDFPlumberLoader[PDFFileLoader]:
+class PDFPlumberLoader(PDFFileLoader):
 
     def process(self, filename: str):
         pages = []

@@ -6,6 +6,10 @@ from interfaces.imagesaver import ImageSaver
 class Page:
     def __init__(self, image):
         self.__image = image
+
+    @property
+    def image(self):
+        return self.__image
     
     @property
     def image(self) -> Image:

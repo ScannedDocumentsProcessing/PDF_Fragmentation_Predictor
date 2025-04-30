@@ -10,6 +10,9 @@ class PDFFile:
     def __init__(self, pages):
         self.__pages: List[Page] = pages
     
+    @property
+    def pages(self):
+        return self.__pages
 
     @classmethod
     def of(cls, pdf_data: bytes, loader: PDFFileLoader):
@@ -25,5 +28,7 @@ class PDFFile:
         for page in self.__pages:
             incrementors.append(page.save_image(saver, destination))
         return dataSaver.process(incrementors)
-        
+    
+    def as_paired_dataset(self, transformer):
+        return transformer.transform(self)
 
