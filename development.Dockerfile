@@ -1,6 +1,11 @@
 # Base image
 FROM python:3.10
 
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install all required packages to run the model
 # TODO: 1. Add any additional packages required to run your model
 # RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
@@ -18,6 +23,10 @@ RUN pip install --requirement ./model-creation/requirements.txt
 
 # Copy sources
 COPY model-creation model-creation
+
+COPY ./model-creation/model/pdf_fragmentation_classifier.bentomodel /tmp/pdf_fragmentation_classifier.bentomodel
+
+RUN bentoml models import /tmp/pdf_fragmentation_classifier.bentomodel
 
 # Environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}

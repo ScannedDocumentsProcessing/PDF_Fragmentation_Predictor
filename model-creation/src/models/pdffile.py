@@ -23,6 +23,15 @@ class PDFFile:
             pages.append(Page(img))
         return PDFFile(pages)
     
+    @classmethod
+    def ofBytes(cls, pdf_data: bytes, loader: PDFFileLoader):
+        dict_pages = loader.processBytes(pdf_data)  # Pass bytes to the loader
+        pages = []
+        for dpage in dict_pages:
+            img = Image(dpage['image'])
+            pages.append(Page(img))
+        return PDFFile(pages)
+    
     def save_images_and_data(self, saver: ImageSaver, destination: str, dataSaver: DataSaver):
         incrementors = []
         for page in self.__pages:

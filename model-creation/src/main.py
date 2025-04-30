@@ -30,8 +30,6 @@ from common_code.service.enums import ServiceStatus
 from common_code.common.enums import FieldDescriptionType, ExecutionUnitTagName, ExecutionUnitTagAcronym
 from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
-from services.pdf2loader import PDF2Loader
-from services.zipperfile import ZipperFile
 import traceback
 import json
 import io
@@ -81,7 +79,7 @@ class MyService(Service):
     def combine_numpy(images, axis=0):
         return np.concatenate(images, axis=axis)
 
-    def predict(pdf_file_data):
+    def predict(self, pdf_file_data):
         model_name = "pdf_fragmentation_classifier:latest"
 
         # Load model
@@ -91,7 +89,7 @@ class MyService(Service):
         model.to(device)
 
         loader = PDFPlumberLoader()
-        pdfFile = PDFFile.of(pdf_file_data, loader)
+        pdfFile = PDFFile.ofBytes(pdf_file_data, loader)
 
         # Prepare dataset
         transformer = TransformerService(transforms.Compose([
@@ -134,7 +132,7 @@ class MyService(Service):
 
             # Return the result in the expected format
             return {
-                "result": TaskData(data=results, type=FieldDescriptionType.APPLICATION_JSON)
+                "result": TaskData(data=json.dumps(results), type=FieldDescriptionType.APPLICATION_JSON)
             }
 
         except KeyError as e:
