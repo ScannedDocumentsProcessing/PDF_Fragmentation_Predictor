@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pdf-fragmentation-predictor-service-config
-  namespace: or-corr  
+  namespace: pdf-fragmentation-predictor
   labels:
     app: pdf-fragmentation-predictor-service
 data:
