@@ -1,3 +1,16 @@
+import argparse
+import tempfile
+from pathlib import Path
+from PIL import Image
+import torch
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader, Dataset
+import bentoml
+import pandas as pd
+from models.pdffile import PDFFile
+from services.transformerservice import TransformerService
+import numpy as np
+from services.pdfplumberloader import PDFPlumberLoader
 import asyncio
 import time
 from fastapi import FastAPI
@@ -17,16 +30,14 @@ from common_code.service.enums import ServiceStatus
 from common_code.common.enums import FieldDescriptionType, ExecutionUnitTagName, ExecutionUnitTagAcronym
 from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
-
-# Imports required by the service's model
+import traceback
 import json
 
 settings = get_settings()
 
-
 class MyService(Service):
     """
-    PDF Fragmentation Predictor
+    Add the text into the PDF in the right position
     """
 
     # Any additional fields must be excluded for Pydantic to work
@@ -43,11 +54,11 @@ class MyService(Service):
             status=ServiceStatus.AVAILABLE,
             data_in_fields=[
                 FieldDescription(
-                    name="PDF",
+                    name="pdf",
                     type=[
                         FieldDescriptionType.APPLICATION_PDF,
                     ],
-                ),
+                )
             ],
             data_out_fields=[
                 FieldDescription(
@@ -60,27 +71,87 @@ class MyService(Service):
                     acronym=ExecutionUnitTagAcronym.DOCUMENT_PROCESSING,
                 ),
             ],
-            has_ai=True,
+            has_ai=False,
         )
         self._logger = get_logger(settings)
 
-    def process(self, data):
-        output = json.dumps([1, 3]) # dummy data
-        return {
-            "result": TaskData(data=output, type=FieldDescriptionType.APPLICATION_JSON)
-        }
+    def combine_numpy(images, axis=0):
+        return np.concatenate(images, axis=axis)
 
+    def predict(self, pdf_file_data):
+        model_name = "pdf_fragmentation_classifier:latest"
+
+        # Load model
+        model = bentoml.pytorch.load_model(model_name)
+        model.eval()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+
+        loader = PDFPlumberLoader()
+        pdfFile = PDFFile.ofBytes(pdf_file_data, loader)
+
+        # Prepare dataset
+        transformer = TransformerService(transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor()
+        ]),
+        torch.cat)
+
+        dataset = pdfFile.as_paired_dataset(transformer)
+
+        dataloader = DataLoader(dataset, batch_size=8, shuffle=False)
+
+        results = []
+        with torch.no_grad():
+            for image_pairs, idxs in dataloader:
+                image_pairs = image_pairs.to(device)
+                outputs = model(image_pairs)
+                preds = (outputs > 0.5).float().cpu().numpy()
+
+                for idx, pred in zip(idxs, preds):
+                    if float(pred) > 0:
+                        results.append(int(idx) + 1)
+
+        return results
+    
+    def process(self, data):
+        try:
+            # Extract the PDF file bytes from the incoming data
+            raw_pdf = data["pdf"].data  # This gets the raw bytes of the PDF file
+            self._logger.info("Successfully extracted PDF bytes from request")
+
+            results = []
+            try:
+                results = self.predict(raw_pdf)
+            except Exception as e:
+                self._logger.error("Error loading PDF:\n" + traceback.format_exc())
+                raise            
+
+            self._logger.info("Successfully processed Fragmentation Predictor")
+
+            # Return the result in the expected format
+            return {
+                "result": TaskData(data=json.dumps(results), type=FieldDescriptionType.APPLICATION_JSON)
+            }
+
+        except KeyError as e:
+            # Handle missing "PDF" field in the request
+            self._logger.error(f"Missing 'PDF' field in request: {str(e)}")
+            raise ValueError("The request must include a 'PDF' field with a valid PDF file.")
+        except ValueError as e:
+            # Handle validation errors (e.g., no images, invalid PDF)
+            self._logger.error(f"Validation error: {str(e)}")
+            raise
+        except Exception as e:
+            # Log any other errors and re-raise them
+            self._logger.error(f"Error processing PDF: {str(e)}")
+            raise
 
 service_service: ServiceService | None = None
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Manual instances because startup events doesn't support Dependency Injection
-    # https://github.com/tiangolo/fastapi/issues/2057
-    # https://github.com/tiangolo/fastapi/issues/425
-
-    # Global variable
     global service_service
 
     # Startup
@@ -101,9 +172,7 @@ async def lifespan(app: FastAPI):
         for engine_url in settings.engine_urls:
             announced = False
             while not announced and retries > 0:
-                announced = await service_service.announce_service(
-                    my_service, engine_url
-                )
+                announced = await service_service.announce_service(my_service, engine_url)
                 retries -= 1
                 if not announced:
                     time.sleep(settings.engine_announce_retry_delay)
@@ -122,14 +191,15 @@ async def lifespan(app: FastAPI):
     for engine_url in settings.engine_urls:
         await service_service.graceful_shutdown(my_service, engine_url)
 
-
-api_description = """PDF Fragmentation Predictor"""
-api_summary = """PDF Fragmentation Predictor"""
+api_description = """The PDF Fragmentation service spilts the PDF into individual PDFs documents.
+"""
+api_summary = """Spilts the PDF into individual PDFs documents.
+"""
 
 # Define the FastAPI application with information
 app = FastAPI(
     lifespan=lifespan,
-    title="PDF Fragmentation Predictor API.",
+    title="PDF Fragmentation API.",
     description=api_description,
     version="0.0.1",
     contact={
@@ -158,7 +228,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # Redirect to docs
 @app.get("/", include_in_schema=False)
