@@ -33,6 +33,6 @@ stages:
     outs:
     - path: model
       hash: md5
-      md5: b66d6e8538e3310e1eae4dad2e76fff4.dir
-      size: 46266684
+      md5: c9bcd671634e85ef8472ce7f8446ad33.dir
+      size: 45793688
       nfiles: 1
