@@ -8,7 +8,10 @@ class Image:
     def raw_data(self):
         return self.__raw_data
     
-    def save(self, saver: ImageSaver, destination: str):
+    def save(self, saver: ImageSaver, destination: str) -> str:
+        """
+        Save the image and return the file name.
+        """
         return saver.process(self.__raw_data, destination)
 
 

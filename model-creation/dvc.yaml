@@ -1,15 +1,19 @@
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw_data data/prepared
+    cmd: python src/prepare.py data/raw_data data/prepared 0.2
     deps:
     - data/raw_data
     - src/prepare.py
     outs:
     - data/prepared
+
   train:
-    cmd: python src/train.py data/prepared model
+    cmd: python src/train.py data/prepared/train model
     deps:
     - src/train.py
     - data/prepared
     outs:
     - model
+  
+  # evaluate:
+    # TODO use data/prepared/test

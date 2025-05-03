@@ -2,7 +2,6 @@ from typing import List
 from models.page import Page
 from models.image import Image
 from interfaces.imagesaver import ImageSaver
-from interfaces.datasaver import DataSaver
 from interfaces.pdffileloader import PDFFileLoader
 import json
 
@@ -15,12 +14,13 @@ class PDFFile:
         return self.__pages
 
     @classmethod
-    def of(cls, pdf_data: bytes, loader: PDFFileLoader):
-        dict_pages = loader.process(pdf_data)  # Pass bytes to the loader
+    def of(cls, filename: str, loader: PDFFileLoader):
+        dict_pages = loader.process(filename)
         pages = []
         for dpage in dict_pages:
             img = Image(dpage['image'])
             pages.append(Page(img))
+        print(f"{filename}: {len(pages)} page(s)")
         return PDFFile(pages)
     
     @classmethod
@@ -32,11 +32,14 @@ class PDFFile:
             pages.append(Page(img))
         return PDFFile(pages)
     
-    def save_images_and_data(self, saver: ImageSaver, destination: str, dataSaver: DataSaver):
-        incrementors = []
+    def save_images(self, saver: ImageSaver, destination: str) -> list[str]:
+        """
+        Save the images in the PDF and return the list of filenames
+        """
+        images_filenames = []
         for page in self.__pages:
-            incrementors.append(page.save_image(saver, destination))
-        return dataSaver.process(incrementors)
+            images_filenames.append(page.save_image(saver, destination))
+        return images_filenames
     
     def as_paired_dataset(self, transformer):
         return transformer.transform(self)
