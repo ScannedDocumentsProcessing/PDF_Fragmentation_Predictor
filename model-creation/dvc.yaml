@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw_data data/prepared 0.2
+    cmd: python src/prepare.py data/raw_data data/prepared
     deps:
     - data/raw_data
     - src/prepare.py
@@ -11,9 +11,17 @@ stages:
     cmd: python src/train.py data/prepared/train model
     deps:
     - src/train.py
-    - data/prepared
+    - data/prepared/train
     outs:
     - model
   
-  # evaluate:
-    # TODO use data/prepared/test
+  evaluate:
+    cmd: python src/evaluate.py data/prepared/test model
+    deps:
+    - src/evaluate.py
+    - data/prepared/test
+    - model
+    metrics:
+    - evaluation/fragmentation_classification_report.json
+    plots:
+    - evaluation/fragmentation_confusion_matrix.png
