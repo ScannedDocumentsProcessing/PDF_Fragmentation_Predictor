@@ -36,6 +36,7 @@ class PDFFile:
         """
         Save the images in the PDF and return the list of filenames
         """
+        saver.begin_doc()
         images_filenames = []
         for page in self.__pages:
             images_filenames.append(page.save_image(saver, destination))

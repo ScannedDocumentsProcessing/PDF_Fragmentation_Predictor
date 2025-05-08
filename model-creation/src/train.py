@@ -94,7 +94,7 @@ def main():
 
     dataset = PagePairDataset(
         json_path = datasetFolder / "pairs.json",
-        image_folder = datasetFolder / "images",
+        image_folder = datasetFolder,
         transform = transform
     )
 
