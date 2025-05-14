@@ -73,7 +73,47 @@ jobs:
         with:
           python-app-path: ./model-serving
 
-  # TODO add train (see https://github.com/swiss-ai-center/create-a-new-service-model-from-scratch-template/blob/main/.github/workflows/workflow.yml)
+  train-and-report:
+    # needs: review
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Change directory
+        run: cd model-creation
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install --requirement requirements-freeze.txt
+      - name: Train model
+        run: dvc repro --pull
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+        with:
+          version: '0.20.6'
+      - name: Create CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Add title to the report
+          echo "# Experiment Report (${{ github.sha }})" >> report.md
+
+          echo "## Metrics workflow" >> report.md
+          dvc metrics show --md >> report.md
+
+          # Create plots
+          echo "## Plots" >> report.md
+
+          # Create confusion matrix
+          echo "### Confusion Matrix" >> report.md
+          echo '![](./evaluation/fragmentation_confusion_matrix.png "Confusion Matrix")' >> report.md
+
+          # Publish the CML report
+          cml comment update --target=commit --publish report.md
 
   test:
     # needs: review
