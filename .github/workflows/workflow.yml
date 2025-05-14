@@ -82,6 +82,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Change directory
         run: cd model-creation
+      - name: Debug
+        run : ls -la
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
