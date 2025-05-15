@@ -111,6 +111,10 @@ jobs:
           # Create plots
           echo "## Plots" >> report.md
 
+          # Create training history plot
+          echo "### Training History" >> report.md
+          echo '![](./model/plots/training_history.png "Training history")' >> report.md
+
           # Create confusion matrix
           echo "### Confusion Matrix" >> report.md
           echo '![](./evaluation/fragmentation_confusion_matrix.png "Confusion Matrix")' >> report.md

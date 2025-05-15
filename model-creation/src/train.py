@@ -4,6 +4,7 @@ from PIL import Image
 from pathlib import Path
 import yaml
 from utils.seed import set_seed
+from matplotlib import pyplot as plt
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -98,6 +99,56 @@ def main():
         transform = transform
     )
 
+    def train_loop(model, dataloader: DataLoader, loss_fn, optimizer, epoch):
+        # inspired from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
+
+        # Set the model to training mode - important for batch normalization and dropout layers
+        model.train()
+
+        size = len(dataloader.dataset)
+        train_loss = 0.0
+        for batch, (images, labels) in enumerate(dataloader):
+            images, labels = images.to(device), labels.to(device)
+
+            outputs = model(images)
+            loss = loss_fn(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            train_loss += loss.item() * len(images) / size
+            if batch % 10 == 0:
+                loss, current = loss.item(), batch * dataloader.batch_size + len(images)
+                print(f"Train loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
+        print(f"Train loss (epoch): {train_loss:>7f}")
+        return train_loss
+
+    def validation_loop(model, dataloader: DataLoader, loss_fn):
+        # inspired from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
+
+        # Set the model to evaluation mode - important for batch normalization and dropout layers
+        model.eval()
+
+        size = len(dataloader.dataset)
+        num_batches = len(dataloader)
+        val_loss, correct = 0, 0
+
+        # Evaluating the model with torch.no_grad() ensures that no gradients are computed during test mode
+        # also serves to reduce unnecessary gradient computations and memory usage for tensors with requires_grad=True
+        with torch.no_grad():
+            for images, labels in dataloader:
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
+                val_loss += loss_fn(outputs, labels).item()
+                predicted = (outputs > 0.5).float()
+                correct += (predicted == labels).type(torch.float).sum().item()
+        
+        val_loss /= num_batches
+        correct /= size
+        print(f"Validation Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+        return val_loss
+
     # Split into train and val sets
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
@@ -112,40 +163,11 @@ def main():
 
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
-
+    train_loss_history, val_loss_history = [], []
     for epoch in range(epochs):
-        model.train()
-        running_loss = 0.0
-        for images, labels in train_loader:
-            images, labels = images.to(device), labels.to(device)
-
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-
-        print(f"Epoch {epoch+1}, Loss: {running_loss / len(train_loader):.4f}")
-    
-    # Set the model to evaluation mode 
-    model.eval()
-    correct = 0
-    total = 0
-
-    # from https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
-    # Evaluating the model with torch.no_grad() ensures that no gradients are computed during test mode
-    # also serves to reduce unnecessary gradient computations and memory usage for tensors with requires_grad=True
-    with torch.no_grad():
-        for images, labels in val_loader:
-            images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
-            predicted = (outputs > 0.5).float()
-            correct += (predicted == labels).sum().item()
-            total += labels.size(0)
-
-    print(f"Validation Accuracy: {correct / total * 100:.2f}%")
+        print(f"Epoch {epoch+1}/{epochs}")
+        train_loss_history.append(train_loop(model, train_loader, criterion, optimizer, epoch))
+        val_loss_history.append(validation_loop(model, val_loader, criterion))
 
     # save the model using BentoML to its model store
     bentoml.pytorch.save_model(
@@ -166,6 +188,30 @@ def main():
     )
 
     print(f"\nModel saved at {modelFolder.absolute()}")
+
+    # Save training history plot
+    plotsFolder = (modelFolder / "plots")
+    plotsFolder.mkdir(parents=True, exist_ok=True)
+
+    fig = get_training_plot(train_loss_history, val_loss_history)
+    fig.savefig(plotsFolder / "training_history.png")
+
+
+def get_training_plot(train_loss_history: list, val_loss_history: list) -> plt.Figure:
+    """Plot the training and validation loss"""
+    epochs = range(1, len(train_loss_history) + 1)
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.plot(epochs, train_loss_history, label="Training loss")
+    plt.plot(epochs, val_loss_history, label="Validation loss")
+    plt.xticks(epochs)
+    plt.title("Training and validation loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True)
+
+    return fig
 
     
 if __name__ == "__main__":

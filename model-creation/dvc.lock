@@ -48,14 +48,14 @@ stages:
       nfiles: 13
     - path: src/train.py
       hash: md5
-      md5: 0d6346f51fe882942b65434aeacec2e2
-      size: 5301
+      md5: d710acc2a9a838720b38fdbe2b444e33
+      size: 7339
     outs:
     - path: model
       hash: md5
-      md5: 3ba180921db22442bfcba4a6ca0bfaa8.dir
-      size: 46490100
-      nfiles: 1
+      md5: 71dfa85404defdfd09d471e219e3dda0.dir
+      size: 46551781
+      nfiles: 2
   evaluate:
     cmd: python src/evaluate.py data/prepared/test model
     deps:
@@ -66,9 +66,9 @@ stages:
       nfiles: 262
     - path: model
       hash: md5
-      md5: 3ba180921db22442bfcba4a6ca0bfaa8.dir
-      size: 46490100
-      nfiles: 1
+      md5: 71dfa85404defdfd09d471e219e3dda0.dir
+      size: 46551781
+      nfiles: 2
     - path: src/evaluate.py
       hash: md5
       md5: d1b804b59721a80da8eaf2a202bc767b
@@ -76,9 +76,9 @@ stages:
     outs:
     - path: evaluation/fragmentation_classification_report.json
       hash: md5
-      md5: ddfbb556187d238e5de6f7dbe8c34999
-      size: 460
+      md5: 333c3d0f1a02a42902b044b8acee63e1
+      size: 534
     - path: evaluation/fragmentation_confusion_matrix.png
       hash: md5
-      md5: 3b28caed1033e8d0619fb4be5f155f93
-      size: 15387
+      md5: ac9a2b9842e87e06452b837147fe3d6a
+      size: 14639
