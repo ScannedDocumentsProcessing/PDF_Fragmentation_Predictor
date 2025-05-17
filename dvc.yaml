@@ -10,7 +10,7 @@ stages:
     - data/prepared
     
   train:
-    cmd: python src/train.py data/prepared/train model
+    cmd: python3.10 src/train.py data/prepared/train model
     deps:
     - src/train.py
     - src/services

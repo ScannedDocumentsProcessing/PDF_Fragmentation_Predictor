@@ -17,7 +17,7 @@ services:
         # Install the dependencies
         pip install -r requirements-all.txt &&
         # Load the model
-        bentoml models import /tmp/pdf_fragmentation_classifier.bentomodel
+        bentoml models import model/pdf_fragmentation_classifier.bentomodel
         # Run the service
         cd src &&
         uvicorn --reload --host 0.0.0.0 --port 9090 main:app
