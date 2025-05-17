@@ -27,6 +27,7 @@ from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
 import traceback
 import json
+import os
 
 settings = get_settings()
 
@@ -70,17 +71,28 @@ class MyService(Service):
         )
         self._logger = get_logger(settings)
 
-    def combine_numpy(images, axis=0):
-        return np.concatenate(images, axis=axis)
 
-    def predict(self, pdf_file_data):
-        model_name = "pdf_fragmentation_classifier:latest"
+        # Import the model to the model store from a local model folder
+        modelPath = os.path.join(os.path.dirname(__file__), "..", "model/pdf_fragmentation_classifier.bentomodel")
+        try:
+            bentoml.models.import_model(modelPath)
+        except bentoml.exceptions.BentoMLException:
+            print("Model already exists in the model store - skipping import.")
 
         # Load model
-        model = bentoml.pytorch.load_model(model_name)
-        model.eval()
+        model_name = "pdf_fragmentation_classifier:latest"
+        self._model = bentoml.pytorch.load_model(model_name)
+        self._model.eval()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
+        self._model.to(device)
+
+
+    def combine_numpy(images, axis=0):
+        return np.concatenate(images, axis=axis)
+    
+
+    def predict(self, pdf_file_data):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         loader = PDFPlumberLoader()
         pdfFile = PDFFile.ofBytes(pdf_file_data, loader)
@@ -93,14 +105,13 @@ class MyService(Service):
         torch.cat)
 
         dataset = pdfFile.as_paired_dataset(transformer)
-
         dataloader = DataLoader(dataset, batch_size=8, shuffle=False)
 
         results = []
         with torch.no_grad():
             for image_pairs, idxs in dataloader:
                 image_pairs = image_pairs.to(device)
-                outputs = model(image_pairs)
+                outputs = self._model(image_pairs)
                 preds = (outputs > 0.5).float().cpu().numpy()
 
                 for idx, pred in zip(idxs, preds):

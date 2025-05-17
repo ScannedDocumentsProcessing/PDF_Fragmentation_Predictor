@@ -87,7 +87,7 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: |
-          pip install --requirement requirements-all.txt
+          pip install --requirement requirements.txt --requirement requirements-all.txt
       - name: Train model
         run:  |
           dvc repro --pull
