@@ -1,0 +1,30 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
+    deps:
+    - path: data/raw_data
+      hash: md5
+      md5: bd2688401c9ca544052c1646852046fe.dir
+      size: 177045054
+      nfiles: 1302
+    - path: src/models
+      hash: md5
+      md5: 37b94f7df89c0471ce87e1829c343499.dir
+      size: 17415
+      nfiles: 10
+    - path: src/prepare.py
+      hash: md5
+      md5: 84ded911e1c69ee9ae3df35255133c3d
+      size: 4123
+    - path: src/services
+      hash: md5
+      md5: b48c41e1020a023e07e5bd581fcfc45b.dir
+      size: 19242
+      nfiles: 11
+    outs:
+    - path: data/prepared
+      hash: md5
+      md5: fbad43c225d49c829d22425a9653f1ba.dir
+      size: 443821878
+      nfiles: 1308

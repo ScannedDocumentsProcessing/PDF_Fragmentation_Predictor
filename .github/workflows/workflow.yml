@@ -71,7 +71,7 @@ jobs:
       - name: Lint Python app
         uses: swiss-ai-center/common-code/.github/actions/lint-python-app@main
         with:
-          python-app-path: ./model-serving
+          python-app-path: .
 
   train-and-report:
     # needs: review
@@ -87,11 +87,9 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: |
-          cd model-creation
-          pip install --requirement requirements-freeze.txt
+          pip install --requirement requirements-all.txt
       - name: Train model
         run:  |
-          cd model-creation
           dvc repro --pull
       - name: Setup CML
         uses: iterative/setup-cml@v2
@@ -101,7 +99,6 @@ jobs:
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd model-creation
           # Add title to the report
           echo "# Experiment Report (${{ github.sha }})" >> report.md
 
@@ -133,7 +130,7 @@ jobs:
       - name: Test Python app
         uses: swiss-ai-center/common-code/.github/actions/test-python-app@main
         with:
-          python-app-path: ./model-serving
+          python-app-path: .
           token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
@@ -150,7 +147,7 @@ jobs:
           docker-registry-username: ${{ github.actor }}
           docker-registry-password: ${{ secrets.GITHUB_TOKEN }}
           docker-image-name: ${{ github.repository }}
-          docker-image-context: ./model-serving
+          docker-image-context: .
     outputs:
       docker-image-tags: ${{ steps.build-and-push-docker-image-to-github.outputs.docker-image-tags }}
 
@@ -175,7 +172,7 @@ jobs:
           service-name: ${{ env.SERVICE_NAME }}
           service-url: ${{ env.DEV_SERVICE_URL }}
           service-docker-image-tag: ${{ env.SERVICE_DOCKER_IMAGE_SHA_TAG }}
-          configuration-files-location: ./model-serving/kubernetes
+          configuration-files-location: ./kubernetes
           environment: development
           log-level: ${{ env.DEV_LOG_LEVEL }}
           engine-urls: ${{ env.DEV_CORE_ENGINE_URLS }}
@@ -186,14 +183,14 @@ jobs:
       - name: Remove unnecessary keys from configuration files
         uses: swiss-ai-center/common-code/.github/actions/remove-unnecessary-keys-from-kubernetes-configuration-files@main
         with:
-          configuration-files-location: ./model-serving/kubernetes
+          configuration-files-location: ./kubernetes
 
       - name: Deploy service on the Kubernetes cluster
         uses: swiss-ai-center/common-code/.github/actions/execute-command-on-kubernetes-cluster@main
         with:
           kube-config: ${{ env.DEV_KUBE_CONFIG }}
           kube-namespace: ${{ env.DEV_NAMESPACE }}
-          kubectl-context: ./model-serving/kubernetes
+          kubectl-context: ./kubernetes
           kubectl-args: |
             apply \
               -f config-map.yml \
@@ -222,7 +219,7 @@ jobs:
           service-name: ${{ env.SERVICE_NAME }}
           service-url: ${{ env.PROD_SERVICE_URL }}
           service-docker-image-tag: ${{ env.SERVICE_DOCKER_IMAGE_SHA_TAG }}
-          configuration-files-location: ./model-serving/kubernetes
+          configuration-files-location: ./kubernetes
           environment: production
           log-level: ${{ env.PROD_LOG_LEVEL }}
           engine-urls: ${{ env.PROD_CORE_ENGINE_URLS }}
@@ -235,7 +232,7 @@ jobs:
         with:
           kube-config: ${{ env.PROD_KUBE_CONFIG }}
           kube-namespace: ${{ env.PROD_NAMESPACE }}
-          kubectl-context: ./model-serving/kubernetes
+          kubectl-context: ./kubernetes
           kubectl-args: |
             apply \
               -f config-map.yml \

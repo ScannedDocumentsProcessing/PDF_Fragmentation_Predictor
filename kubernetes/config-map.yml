@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdf-fragmentation-predictor-service-config
+  namespace: pdf-fragmentation-predictor
+  labels:
+    app: pdf-fragmentation-predictor-service
+data:
+  ENVIRONMENT: development
+  LOG_LEVEL: debug
+  ENGINE_URLS: '["https://backend-core-engine-swiss-ai-center.kube-ext.isc.heia-fr.ch"]' 
+  SERVICE_URL: https://pdf-fragmentation-predictor-swiss-ai-center.kube-ext.isc.heia-fr.ch
+  MAX_TASKS: '50'
+  ENGINE_ANNOUNCE_RETRIES: '5'
+  ENGINE_ANNOUNCE_RETRY_DELAY: '3'

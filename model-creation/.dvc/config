@@ -1,9 +1,0 @@
-[core]
-    remote = data
-['remote "data"']
-    url = s3://group5/pdf_fragmentation_data/dvcstore
-    endpointurl = https://minio-sp25.isc.heia-fr.ch:9003
-    access_key_id = 8R3WlAjJmbDaG6AqfxhH
-    secret_access_key = d6pyr8gdlWhdQdvWIZVNXoHqlQycMAAlv3OAbcPs
-    use_ssl = true
-    ssl_verify = false
