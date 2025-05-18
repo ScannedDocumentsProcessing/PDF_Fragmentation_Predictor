@@ -15,7 +15,7 @@ services:
         # Activate the virtual environment
         source .venv/bin/activate &&
         # Install the dependencies
-        pip install -r requirements-all.txt &&
+        pip install -r requirements.txt -r requirements-all.txt &&
         # Load the model
         bentoml models import model/pdf_fragmentation_classifier.bentomodel
         # Run the service

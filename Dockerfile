@@ -10,10 +10,11 @@ RUN apt-get update && apt-get install -y \
 # Work directory
 WORKDIR /app
 
+COPY ./requirements.txt .
 COPY ./requirements-all.txt .
 
 # Install dependencies
-RUN pip install --requirement requirements-all.txt
+RUN pip install --requirement requirements.txt --requirement requirements-all.txt
 
 # Copy sources
 COPY src src
