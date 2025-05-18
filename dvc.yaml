@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
+    cmd: python3.10 src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
     deps:
     - data/raw_data
     - src/prepare.py
@@ -22,7 +22,7 @@ stages:
     - model
 
   evaluate:
-    cmd: python src/evaluate.py data/prepared/test model
+    cmd: python3.10 src/evaluate.py data/prepared/test model
     deps:
     - src/evaluate.py
     - data/prepared/test

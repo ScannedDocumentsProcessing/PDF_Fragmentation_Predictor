@@ -51,7 +51,7 @@ concurrency:
 on: 
   push:
     branches:
-      # - main
+      - main
       # - prod
       - mlops #test_purposes
 
