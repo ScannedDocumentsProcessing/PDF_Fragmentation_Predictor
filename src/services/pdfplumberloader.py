@@ -5,6 +5,7 @@ import sys
 from interfaces.pdffileloader import PDFFileLoader
 from io import BytesIO
 
+
 class PDFPlumberLoader(PDFFileLoader):
 
     def process(self, filename: str):
@@ -38,7 +39,7 @@ class PDFPlumberLoader(PDFFileLoader):
                         except Exception as e:
                             print(f"Error decoding image on page {page.page_number}: {str(e)}")
                             continue
-                        
+
             pdf.close()
         if not pages:
             raise ValueError("The PDF file does not contain any valid images.")

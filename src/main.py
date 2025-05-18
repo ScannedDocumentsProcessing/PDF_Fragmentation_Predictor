@@ -1,6 +1,6 @@
 import torch
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import bentoml
 from models.pdffile import PDFFile
 from services.transformerservice import TransformerService
@@ -30,6 +30,7 @@ import json
 import os
 
 settings = get_settings()
+
 
 class MyService(Service):
     """
@@ -71,7 +72,6 @@ class MyService(Service):
         )
         self._logger = get_logger(settings)
 
-
         # Import the model to the model store from a local model folder
         modelPath = os.path.join(os.path.dirname(__file__), "..", "model/pdf_fragmentation_classifier.bentomodel")
         try:
@@ -86,10 +86,8 @@ class MyService(Service):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._model.to(device)
 
-
     def combine_numpy(images, axis=0):
         return np.concatenate(images, axis=axis)
-    
 
     def predict(self, pdf_file_data):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -101,8 +99,7 @@ class MyService(Service):
         transformer = TransformerService(transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor()
-        ]),
-        torch.cat)
+        ]), torch.cat)
 
         dataset = pdfFile.as_paired_dataset(transformer)
         dataloader = DataLoader(dataset, batch_size=8, shuffle=False)
@@ -119,7 +116,7 @@ class MyService(Service):
                         results.append(int(idx) + 1)
 
         return results
-    
+
     def process(self, data):
         try:
             # Extract the PDF file bytes from the incoming data
@@ -129,9 +126,9 @@ class MyService(Service):
             results = []
             try:
                 results = self.predict(raw_pdf)
-            except Exception as e:
+            except Exception:
                 self._logger.error("Error loading PDF:\n" + traceback.format_exc())
-                raise            
+                raise
 
             self._logger.info("Successfully processed Fragmentation Predictor")
 
@@ -153,7 +150,9 @@ class MyService(Service):
             self._logger.error(f"Error processing PDF: {str(e)}")
             raise
 
+
 service_service: ServiceService | None = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -234,6 +233,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Redirect to docs
 @app.get("/", include_in_schema=False)

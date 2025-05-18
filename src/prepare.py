@@ -1,4 +1,4 @@
-import sys 
+import sys
 import os
 import shutil
 from pathlib import Path
@@ -27,7 +27,7 @@ def createListOfDocuments(folder) -> list[list[str]]:
         files = filesByDocNames.get(docName, [])
         files.append(filename)
         filesByDocNames[docName] = files
-    
+
     return [filesByDocNames.get(key) for key in filesByDocNames.keys()]
 
 
@@ -37,7 +37,7 @@ def splitTrainTest(files: list[str], test_size: float = None) -> dict:
     - test_size: should be between 0.0 and 1.0 and represent the proportion of the dataset
     to include in the test split
 
-    Return a dict that contains a 'train' and a 'test' key, and whose values are the list of 
+    Return a dict that contains a 'train' and a 'test' key, and whose values are the list of
     files assigned to that subset.
     """
 
@@ -60,7 +60,7 @@ def splitTrainTest(files: list[str], test_size: float = None) -> dict:
     result['train'] = train_files
     if len(test_files) > 0:
         result['test'] = test_files
-    
+
     print(f'found {nb_files} files. split: train = {len(train_files)}, test = {len(test_files)}')
     return result
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     params = yaml.safe_load(open("params.yaml"))["prepare"]
     split = params["split"]
     seed = params["seed"]
-    
+
     # set seed for reproducibility
     set_seed(seed)
 
@@ -106,12 +106,12 @@ if __name__ == "__main__":
     # process the tobacco dataset by inverting the images colors and store them in the destination folder
     imagesProcessor = RawImagesProcessor(TobaccoImageSaver(incrementor))
     imagesProcessor.prepare_images(imagesSourceFolder, destinationFolder)
-    
+
     # split to train and test
     docsAndFiles = createListOfDocuments(destinationFolder)
-    random.shuffle(docsAndFiles) # only shuffle the first level of the list (the documents), not the files (pages)
+    random.shuffle(docsAndFiles)  # only shuffle the first level of the list (the documents), not the files (pages)
     preparedFiles = flatten(docsAndFiles)
-    
+
     datasets = splitTrainTest(preparedFiles, split)
     moveFilesToSubDirectory(destinationFolder, datasets)
 

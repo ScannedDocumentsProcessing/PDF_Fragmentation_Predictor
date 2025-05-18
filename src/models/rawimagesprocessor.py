@@ -4,12 +4,12 @@ from interfaces.rawdataprocessor import RawDataProcessor
 from pathlib import Path
 from functools import cmp_to_key
 
+
 class RawImagesProcessor(RawDataProcessor):
 
     def __init__(self, saver: ImageSaver):
-        self.__saver = saver  
+        self.__saver = saver
 
-    
     def prepare_images(self, src_folder: str, dst_folder: str):
         """
         Process raw images in the source folder src_folder and store them in the destination folder dst_folder.
@@ -17,8 +17,8 @@ class RawImagesProcessor(RawDataProcessor):
         - If a document has a single page, the page is reprensented by an image file with an arbitrary filename. The
         filename can't contain any underscore character (for instance jhz25e00.png)
         - For a multiple-pages document, there must be one file per page and they must have the following format:
-        docName_pageNumber.ext, where docName is an arbitrary name that contains no underscore char, pageNumber is a counter,
-        and ext is the file extension. docName must be the same for all the pages of the same document.
+        docName_pageNumber.ext, where docName is an arbitrary name that contains no underscore char, pageNumber is a
+        counter, and ext is the file extension. docName must be the same for all the pages of the same document.
         Example of a document with two pages: juo75f00_1.png and juo75f00_2.png
         """
 
@@ -30,15 +30,15 @@ class RawImagesProcessor(RawDataProcessor):
 
         previousDocName = None
         for fileDict in self.__class__.__get_filenames_dict(files):
-            # multiple pages of the same document share the same docName. If we encouter a different docName, it means it's a new document:
+            # multiple pages of the same document share the same docName. If we encouter a different docName,
+            # it means it's a new document:
             if previousDocName is None or previousDocName != fileDict["docName"]:
                 self.__saver.begin_doc()
-            
+
             # save image
             self.__saver.process_page_image(fileDict["filePath"], dst_folder)
 
             previousDocName = fileDict["docName"]
-
 
     @classmethod
     def __compare_files_dict(cls, dict_a: dict, dict_b: dict):
@@ -51,8 +51,7 @@ class RawImagesProcessor(RawDataProcessor):
         if dict_a["pageNumber"] < dict_b["pageNumber"]:
             return -1
         return 0
-    
-    
+
     @classmethod
     def __get_filenames_dict(cls, filepaths):
         """
@@ -75,7 +74,7 @@ class RawImagesProcessor(RawDataProcessor):
             if len(docNameAndPageNumber) == 1:
                 pageNumber = 0
             else:
-                pageNumber = int(docNameAndPageNumber[1].split(".")[0]) # ignore file extension
+                pageNumber = int(docNameAndPageNumber[1].split(".")[0])  # ignore file extension
 
             result.append({
                 "filePath": filepath,
@@ -84,9 +83,3 @@ class RawImagesProcessor(RawDataProcessor):
             })
         result.sort(key=cmp_to_key(cls.__compare_files_dict))
         return result
-
-        
-            
-
-        
-        

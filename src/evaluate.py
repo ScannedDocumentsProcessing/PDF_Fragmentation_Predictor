@@ -9,11 +9,11 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
-
 import bentoml
 
 
 Image.MAX_IMAGE_PIXELS = None
+
 
 class PagePairDataset(Dataset):
     def __init__(self, json_path, image_folder, transform=None):
@@ -47,20 +47,21 @@ def main():
     parser.add_argument("test_dataset_folder", type=str, help="Input path to the test dataset folder.")
     parser.add_argument("model_folder", type=str, help="Input path to the model folder.")
     args = parser.parse_args()
-    
+
     datasetFolder = Path(args.test_dataset_folder)
     modelFolder = Path(args.model_folder)
 
-    # TODO voir si on peut centraliser ça + PagePairDataset à un seul endroit, car là on a ce code dupliqué à trois endroits : train.py, ici et dans main.py (service)
+    # TODO voir si on peut centraliser ça + PagePairDataset à un seul endroit, car là on a ce code dupliqué
+    # à trois endroits : train.py, ici et dans main.py (service)
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor()
     ])
 
     dataset = PagePairDataset(
-        json_path = datasetFolder / "pairs.json",
-        image_folder = datasetFolder,
-        transform = transform
+        json_path=datasetFolder / "pairs.json",
+        image_folder=datasetFolder,
+        transform=transform
     )
 
     loader = DataLoader(dataset, batch_size=16, shuffle=False)
@@ -73,7 +74,6 @@ def main():
 
     # Load model
     modelName = "pdf_fragmentation_classifier:latest"
-    # TODO discuter avec Jossef : j'ai dû ajouter weights_only=False, sinon j'obtenais une erreur. pourquoi ça marche sans cet argument dans le service ?
     model = bentoml.pytorch.load_model(modelName, weights_only=False)
     model.eval()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -90,10 +90,11 @@ def main():
             outputs = model(images)
             predicted = (outputs > 0.5).float()
 
-            # ".cpu()" is necessary if the code runs on GPU. See https://medium.com/@heyamit10/converting-pytorch-tensors-to-numpy-arrays-fa804b1fae1c
+            # ".cpu()" is necessary if the code runs on GPU.
+            # See https://medium.com/@heyamit10/converting-pytorch-tensors-to-numpy-arrays-fa804b1fae1c
             all_true_labels.extend(labels.cpu().numpy())
             all_predictions.extend(predicted.cpu().numpy())
-    
+
     # Create folder and save performance report
     evaluation_folder = Path("evaluation")
     evaluation_folder.mkdir(exist_ok=True)
@@ -101,13 +102,13 @@ def main():
     cm = confusion_matrix(all_true_labels, all_predictions)
     disp = ConfusionMatrixDisplay(cm)
     disp.plot().figure_.savefig(os.path.join(evaluation_folder, 'fragmentation_confusion_matrix.png'))
-    
-    with open(os.path.join(evaluation_folder, f"fragmentation_classification_report.json"), "w") as file:
+
+    with open(os.path.join(evaluation_folder, "fragmentation_classification_report.json"), "w") as file:
         report = classification_report(all_true_labels, all_predictions, output_dict=True)
         json.dump(report, file)
     print("Classification report:")
     print(classification_report(all_true_labels, all_predictions))
 
-    
+
 if __name__ == "__main__":
     main()

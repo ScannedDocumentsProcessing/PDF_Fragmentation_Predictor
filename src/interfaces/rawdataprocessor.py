@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 import os
 
+
 class RawDataProcessor(ABC):
-    
+
     @abstractmethod
     def prepare_images(self, src_folder: str, dst_folder: str):
         pass
@@ -16,5 +17,3 @@ class RawDataProcessor(ABC):
                 files_path.append(os.path.join(folder_name, entry.name))
         files_path.sort()
         return files_path
-
-    

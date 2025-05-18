@@ -1,5 +1,6 @@
 from PIL import Image as PILImage
 
+
 class TransformerService:
     def __init__(self, transform, combine_fn):
         self.__transform = transform

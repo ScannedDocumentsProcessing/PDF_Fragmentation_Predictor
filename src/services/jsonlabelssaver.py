@@ -3,10 +3,10 @@ import os
 from pathlib import Path
 import json
 
+
 class JSONLabelsSaver(LabelsSaver):
     def __init__(self):
         pass
-
 
     def __create_json(self, a, b, label):
         return {
@@ -14,7 +14,6 @@ class JSONLabelsSaver(LabelsSaver):
             "b": b,
             "label": label
         }
-    
 
     def __process_filenames(self, pages_filenames: list[list[str]]) -> list[dict]:
         """
@@ -37,16 +36,17 @@ class JSONLabelsSaver(LabelsSaver):
                     pairs_labels.append(self.__create_json(previous_filename, current_filename, label))
                 # data for the next iteration:
                 previous_filename = current_filename
-                label = 0 # while we treat pages of the same pdf file, the next pairs will indicate that we're in the same document
-            
+                # while we treat pages of the same pdf file, the next pairs will indicate that we're
+                # in the same document
+                label = 0
+
             # we got to the end of the current pdf file, so the next pair will indicate that we started a new document
             label = 1
 
         return pairs_labels
 
-
     def __save_data(self, json_data, destination):
-        filename = f"pairs.json"
+        filename = "pairs.json"
         full_path = os.path.join(destination, filename)
 
         path = Path(destination)
@@ -55,8 +55,7 @@ class JSONLabelsSaver(LabelsSaver):
         print(f"saving labels to {full_path}")
         with open(full_path, "w") as f:
             json.dump(json_data, f, indent=2)
-    
-    
+
     def process_and_save_labels(self, pages_filenames: list[list[str]], destination_folder):
         """
         Process the pages filenames of multiples PDF files and save the pairs labels in the given destination folder.
@@ -67,4 +66,3 @@ class JSONLabelsSaver(LabelsSaver):
         """
         pairs_data = self.__process_filenames(pages_filenames)
         self.__save_data(pairs_data, destination_folder)
-

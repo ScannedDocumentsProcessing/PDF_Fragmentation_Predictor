@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from pathlib import Path
 
+
 class PdfImageSaver(ImageSaver):
 
     def process_page_image(self, img, destination):
@@ -18,5 +19,5 @@ class PdfImageSaver(ImageSaver):
 
         print(f'saving image to {full_path}')
         img = Image.fromarray(img)
-        img.save(full_path) # save image to destination
-        
+        img.save(full_path)  # save image to destination
+

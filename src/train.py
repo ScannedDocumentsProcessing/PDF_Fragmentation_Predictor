@@ -17,6 +17,7 @@ import bentoml
 
 Image.MAX_IMAGE_PIXELS = None
 
+
 class PagePairDataset(Dataset):
     def __init__(self, json_path, image_folder, transform=None):
         with open(json_path, 'r') as f:
@@ -41,7 +42,7 @@ class PagePairDataset(Dataset):
         image_pair = torch.cat((img_a, img_b), dim=0)
 
         return image_pair, label
-    
+
 
 class SimpleClassifier(nn.Module):
     def __init__(self):
@@ -74,7 +75,7 @@ def main():
     parser.add_argument("train_dataset_folder", type=str, help="Input path to the training dataset folder.")
     parser.add_argument("model_folder", type=str, help="Ouptut path to the model folder.")
     args = parser.parse_args()
-    
+
     datasetFolder = Path(args.train_dataset_folder)
     modelFolder = Path(args.model_folder)
 
@@ -94,9 +95,9 @@ def main():
     ])
 
     dataset = PagePairDataset(
-        json_path = datasetFolder / "pairs.json",
-        image_folder = datasetFolder,
-        transform = transform
+        json_path=datasetFolder / "pairs.json",
+        image_folder=datasetFolder,
+        transform=transform
     )
 
     def train_loop(model, dataloader: DataLoader, loss_fn, optimizer, epoch):
@@ -143,7 +144,7 @@ def main():
                 val_loss += loss_fn(outputs, labels).item()
                 predicted = (outputs > 0.5).float()
                 correct += (predicted == labels).type(torch.float).sum().item()
-        
+
         val_loss /= num_batches
         correct /= size
         print(f"Validation Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
@@ -173,11 +174,6 @@ def main():
     bentoml.pytorch.save_model(
         "pdf_fragmentation_classifier",
         model,
-        custom_objects = {
-            # TODO create and implement the two methods
-            #"preprocess": preprocess,
-            #"postprocess": postprocess,
-        }
     )
 
     # export the model from the model store to the local model folder
@@ -213,6 +209,6 @@ def get_training_plot(train_loss_history: list, val_loss_history: list) -> plt.F
 
     return fig
 
-    
+
 if __name__ == "__main__":
     main()

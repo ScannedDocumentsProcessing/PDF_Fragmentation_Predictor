@@ -4,8 +4,9 @@ from PIL import Image
 import os
 from pathlib import Path
 
+
 class TobaccoImageSaver(ImageSaver):
-        
+
     def process_page_image(self, img, destination):
         """
         Invert the colors of the source image and save the result in the destination folder.
@@ -23,4 +24,3 @@ class TobaccoImageSaver(ImageSaver):
         image = Image.open(img)
         inverted_image = PIL.ImageOps.invert(image)
         inverted_image.save(full_path)
-        
