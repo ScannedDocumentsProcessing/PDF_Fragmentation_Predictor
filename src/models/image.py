@@ -14,4 +14,3 @@ class Image:
         Save the image and return the file name.
         """
         return saver.process_page_image(self.__raw_data, destination)
-

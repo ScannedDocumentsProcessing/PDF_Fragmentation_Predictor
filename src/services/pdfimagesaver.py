@@ -20,4 +20,3 @@ class PdfImageSaver(ImageSaver):
         print(f'saving image to {full_path}')
         img = Image.fromarray(img)
         img.save(full_path)  # save image to destination
-
