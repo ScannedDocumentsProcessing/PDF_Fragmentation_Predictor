@@ -20,7 +20,8 @@ RUN pip install --requirement requirements.txt --requirement requirements-all.tx
 COPY src src
 
 # Copy model
-COPY ./model .
+RUN mkdir -p model
+COPY ./model/pdf_fragmentation_classifier.bentomodel ./model/pdf_fragmentation_classifier.bentomodel
 
 # Environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}
