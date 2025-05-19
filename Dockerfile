@@ -20,7 +20,7 @@ RUN pip install --requirement requirements.txt --requirement requirements-all.tx
 COPY src src
 
 # Copy model
-COPY model model
+COPY ./model .
 
 # Environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}
