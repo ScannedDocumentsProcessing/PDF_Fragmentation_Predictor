@@ -91,6 +91,12 @@ jobs:
       - name: Train model
         run:  |
           dvc repro --pull
+      - name: Upload model
+        uses: actions/upload-artifact@v4
+        with:
+          name: model
+          path: ./model/pdf_fragmentation_classifier.bentomodel
+          retention-days: 5
       - name: Setup CML
         uses: iterative/setup-cml@v2
         with:
@@ -140,6 +146,13 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+      - name: Create model directory
+        run: mkdir -p model
+      - name: Download model
+        uses: actions/download-artifact@v4
+        with:
+          name: model
+          path: ./model
       - name: Build and push Docker image to GitHub
         id: build-and-push-docker-image-to-github
         uses: swiss-ai-center/common-code/.github/actions/build-and-push-docker-image-to-github@main
