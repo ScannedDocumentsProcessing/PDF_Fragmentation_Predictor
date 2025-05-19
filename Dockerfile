@@ -19,6 +19,9 @@ RUN pip install --requirement requirements.txt --requirement requirements-all.tx
 # Copy sources
 COPY src src
 
+# Copy model
+COPY model model
+
 # Environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}
 ENV LOG_LEVEL=${LOG_LEVEL}
