@@ -5,4 +5,4 @@ prepare:
 train:
   seed: 42
   lr: 0.0001
-  epochs: 1
+  epochs: 10
