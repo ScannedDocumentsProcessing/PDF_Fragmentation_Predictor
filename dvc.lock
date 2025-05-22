@@ -10,18 +10,18 @@ stages:
       nfiles: 1302
     - path: src/models
       hash: md5
-      md5: 39a6857e29399bbbc8375a44324bb809.dir
-      size: 31292
-      nfiles: 18
+      md5: 286fee01020588cb90b38aa6c01d9535.dir
+      size: 14944
+      nfiles: 10
     - path: src/prepare.py
       hash: md5
       md5: 799ad663808790ffa2cc276ad7200a65
       size: 4103
     - path: src/services
       hash: md5
-      md5: e5d205847f74366c90770220ca8fac4a.dir
-      size: 37276
-      nfiles: 21
+      md5: 7c218d98b60f8b7fff9a439f3a3908ce.dir
+      size: 16071
+      nfiles: 11
     outs:
     - path: data/prepared
       hash: md5
@@ -38,14 +38,14 @@ stages:
       nfiles: 1046
     - path: src/models
       hash: md5
-      md5: 39a6857e29399bbbc8375a44324bb809.dir
-      size: 31292
-      nfiles: 18
+      md5: 286fee01020588cb90b38aa6c01d9535.dir
+      size: 14944
+      nfiles: 10
     - path: src/services
       hash: md5
-      md5: e5d205847f74366c90770220ca8fac4a.dir
-      size: 37276
-      nfiles: 21
+      md5: 7c218d98b60f8b7fff9a439f3a3908ce.dir
+      size: 16071
+      nfiles: 11
     - path: src/train.py
       hash: md5
       md5: 20267a6f59b4ae79549f95905cb1864b
@@ -59,12 +59,12 @@ stages:
     outs:
     - path: model/pdf_fragmentation_classifier.bentomodel
       hash: md5
-      md5: d65365f803967565775d7085e3ef6a82
-      size: 46615796
+      md5: 5c78349ced99643358050d0fea2d11d5
+      size: 46622216
     - path: model/plots/training_history.png
       hash: md5
-      md5: a0a7db099e46645a26d6107426f8bd1b
-      size: 39914
+      md5: 46cbc4fb7fab8eff4f081ef6f9055c9a
+      size: 40196
   evaluate:
     cmd: python3.10 src/evaluate.py data/prepared/test model
     deps:
@@ -75,8 +75,8 @@ stages:
       nfiles: 262
     - path: model
       hash: md5
-      md5: fa29c9cdb17562a2a496df82392d21eb.dir
-      size: 46655710
+      md5: 6fe5e252d1fcf6346a796bb767fad5e8.dir
+      size: 46662412
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
@@ -85,9 +85,9 @@ stages:
     outs:
     - path: evaluation/fragmentation_classification_report.json
       hash: md5
-      md5: 45bedbd67aa79ee69cc62d0b50f0da8b
-      size: 534
+      md5: 4794ce517ea6114c10a8c3f262ce6367
+      size: 520
     - path: evaluation/fragmentation_confusion_matrix.png
       hash: md5
-      md5: 809b31c8e4cc18790570573dbca1f332
-      size: 13341
+      md5: ed0ea0376d2a6b7f7eb34632d14ec15f
+      size: 13479
