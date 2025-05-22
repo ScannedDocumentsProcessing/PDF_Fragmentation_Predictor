@@ -111,22 +111,39 @@ jobs:
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Fetch main Git branch
+          git fetch --depth=1 origin main:main
+
           # Add title to the report
           echo "# Experiment Report (${{ github.sha }})" >> report.md
 
-          echo "## Metrics workflow" >> report.md
-          dvc metrics show --md >> report.md
+          # Compare parameters to main branch
+          echo "## Params workflow vs. main" >> report.md
+          dvc params diff main --md >> report.md
+
+          # Compare metrics to main branch
+          echo "## Metrics workflow vs. main" >> report.md
+          dvc metrics diff main --md >> report.md
+
+          # Compare plots (images) to main branch
+          dvc plots diff main
 
           # Create plots
           echo "## Plots" >> report.md
 
           # Create training history plot
           echo "### Training History" >> report.md
-          echo '![](./model/plots/training_history.png "Training history")' >> report.md
+          echo "#### main" >> report.md
+          echo '![](./dvc_plots/static/main_model_plots_training_history.png "Training History")' >> report.md
+          echo "#### workspace" >> report.md
+          echo '![](./dvc_plots/static/workspace_model_plots_training_history.png "Training History")' >> report.md
 
           # Create confusion matrix
           echo "### Confusion Matrix" >> report.md
-          echo '![](./evaluation/fragmentation_confusion_matrix.png "Confusion Matrix")' >> report.md
+          echo "#### main" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_fragmentation_confusion_matrix.png "Confusion Matrix")' >> report.md
+          echo "#### workspace" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_fragmentation_confusion_matrix.png "Confusion Matrix")' >> report.md
 
           # Publish the CML report
           cml comment update --target=commit --publish report.md

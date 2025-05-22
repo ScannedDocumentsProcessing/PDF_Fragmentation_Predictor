@@ -19,7 +19,9 @@ stages:
     params:
     - train
     outs:
-    - model
+    - model/pdf_fragmentation_classifier.bentomodel
+    plots:
+    - model/plots/training_history.png
 
   evaluate:
     cmd: python3.10 src/evaluate.py data/prepared/test model

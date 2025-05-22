@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
+    cmd: python3.10 src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
     deps:
     - path: data/raw_data
       hash: md5
@@ -10,7 +10,7 @@ stages:
       nfiles: 1302
     - path: src/models
       hash: md5
-      md5: eac6cdf60698aa9a1e366cb50f480435.dir
+      md5: 39a6857e29399bbbc8375a44324bb809.dir
       size: 31292
       nfiles: 18
     - path: src/prepare.py
@@ -19,7 +19,7 @@ stages:
       size: 4103
     - path: src/services
       hash: md5
-      md5: 751ceb8ac40c66620a4d49ecbe229c67.dir
+      md5: e5d205847f74366c90770220ca8fac4a.dir
       size: 37276
       nfiles: 21
     outs:
@@ -38,12 +38,12 @@ stages:
       nfiles: 1046
     - path: src/models
       hash: md5
-      md5: eac6cdf60698aa9a1e366cb50f480435.dir
+      md5: 39a6857e29399bbbc8375a44324bb809.dir
       size: 31292
       nfiles: 18
     - path: src/services
       hash: md5
-      md5: 751ceb8ac40c66620a4d49ecbe229c67.dir
+      md5: e5d205847f74366c90770220ca8fac4a.dir
       size: 37276
       nfiles: 21
     - path: src/train.py
@@ -55,15 +55,18 @@ stages:
         train:
           seed: 42
           lr: 0.0001
-          epochs: 20
+          epochs: 10
     outs:
-    - path: model
+    - path: model/pdf_fragmentation_classifier.bentomodel
       hash: md5
-      md5: c5eaa082ffc0b07eb3a468320a62e2ce.dir
-      size: 46630815
-      nfiles: 2
+      md5: b12884e70221623eda43d63c17d2cbcb
+      size: 46572964
+    - path: model/plots/training_history.png
+      hash: md5
+      md5: 72849cd4f0d24c52590b2e54cf47ca96
+      size: 41876
   evaluate:
-    cmd: python src/evaluate.py data/prepared/test model
+    cmd: python3.10 src/evaluate.py data/prepared/test model
     deps:
     - path: data/prepared/test
       hash: md5
@@ -72,8 +75,8 @@ stages:
       nfiles: 262
     - path: model
       hash: md5
-      md5: c5eaa082ffc0b07eb3a468320a62e2ce.dir
-      size: 46630815
+      md5: 1ebd0ecf2807cf9307765bf47cbe00a6.dir
+      size: 46614840
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
@@ -82,9 +85,9 @@ stages:
     outs:
     - path: evaluation/fragmentation_classification_report.json
       hash: md5
-      md5: 4c4f51f7133ed01a111233b998f9d6e7
-      size: 496
+      md5: c3517c60b2eafdd684b39ebe19b4fdf5
+      size: 494
     - path: evaluation/fragmentation_confusion_matrix.png
       hash: md5
-      md5: 53f008e1e2643b01386c708132dafdf3
-      size: 14798
+      md5: 2c564fcbb0dc1090a5292f86a77b3b05
+      size: 14687
