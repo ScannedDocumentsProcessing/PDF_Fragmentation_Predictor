@@ -102,6 +102,20 @@ jobs:
           path: ./model/pdf_fragmentation_classifier.bentomodel
           retention-days: 5
 
+      - name: Push the outcomes to DVC remote storage
+        run: dvc push
+
+      - name: Commit changes in dvc.lock
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Commit changes in dvc.lock
+          file_pattern: dvc.lock
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Setup CML
         uses: iterative/setup-cml@v2
         with:
@@ -160,7 +174,7 @@ jobs:
         run: mkdir -p model
 
       - name: Download model
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: model
           path: ./model
