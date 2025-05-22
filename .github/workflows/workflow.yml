@@ -1,6 +1,6 @@
 # Documentation: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 name: pdf_fragmentation_predictor_workflow
-run-name: pdf_fragmentation_predictor_workflow
+run-name: PDF Fragmentation Predictor Workflow
 
 env:
   ## Common environment variables
@@ -45,15 +45,14 @@ env:
 
 # Allow one concurrent deployment
 concurrency:
-  group: github_workflow
+  group: pdf_fragmentation_predictor_workflow # TODO vérifier sur autres projets, ça doit correspondre au nom tout en haut
   cancel-in-progress: true
 
 on: 
+  # Runs on pushes targeting main branch
   push:
     branches:
       - main
-      # - prod
-      - mlops #test_purposes
 
   pull_request:
 
@@ -77,30 +76,37 @@ jobs:
     needs: review
     permissions: write-all
     runs-on: ubuntu-latest
+    if: ${{ vars.RUN_CICD == 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: pip
+
       - name: Install dependencies
         run: |
           pip install --requirement requirements.txt --requirement requirements-all.txt
+
       - name: Train model
         run:  |
           dvc repro --pull
+
       - name: Upload model
         uses: actions/upload-artifact@v4
         with:
           name: model
           path: ./model/pdf_fragmentation_classifier.bentomodel
           retention-days: 5
+
       - name: Setup CML
         uses: iterative/setup-cml@v2
         with:
           version: '0.20.6'
+
       - name: Create CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -126,12 +132,21 @@ jobs:
           cml comment update --target=commit --publish report.md
 
   test:
-    needs: review
+    needs: train-and-report
     runs-on: ubuntu-latest
     if: ${{ vars.RUN_CICD == 'true' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+
+      - name: Create model directory
+        run: mkdir -p model
+
+      - name: Download model
+        uses: actions/download-artifact@v3
+        with:
+          name: model
+          path: ./model
 
       - name: Test Python app
         uses: swiss-ai-center/common-code/.github/actions/test-python-app@main
@@ -142,17 +157,20 @@ jobs:
   release:
     needs: train-and-report # TODO add test
     runs-on: ubuntu-latest
-    # if: ${{ vars.RUN_CICD == 'true' && success() && github.ref == 'refs/heads/main' && (vars.DEPLOY_DEV == 'true' || vars.DEPLOY_PROD == 'true') }}
+    # TODO if: ${{ vars.RUN_CICD == 'true' && success() && github.ref == 'refs/heads/main' && (vars.DEPLOY_DEV == 'true' || vars.DEPLOY_PROD == 'true') }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+
       - name: Create model directory
         run: mkdir -p model
+
       - name: Download model
         uses: actions/download-artifact@v4
         with:
           name: model
           path: ./model
+
       - name: Build and push Docker image to GitHub
         id: build-and-push-docker-image-to-github
         uses: swiss-ai-center/common-code/.github/actions/build-and-push-docker-image-to-github@main
