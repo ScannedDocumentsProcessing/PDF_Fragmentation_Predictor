@@ -1,3 +1,11 @@
+import torch
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+import bentoml
+from models.pdffile import PDFFile
+from services.transformerservice import TransformerService
+import numpy as np
+from services.pdfplumberloader import PDFPlumberLoader
 import asyncio
 import time
 from fastapi import FastAPI
@@ -17,14 +25,12 @@ from common_code.service.enums import ServiceStatus
 from common_code.common.enums import FieldDescriptionType, ExecutionUnitTagName, ExecutionUnitTagAcronym
 from common_code.common.models import FieldDescription, ExecutionUnitTag
 from contextlib import asynccontextmanager
-from services.pdfplumberloader import PDFPlumberLoader
 import traceback
 import json
-
-# Imports required by the service's model
-from models.pdffile import PDFFile
+import os
 
 settings = get_settings()
+
 
 class MyService(Service):
     """
@@ -37,8 +43,8 @@ class MyService(Service):
 
     def __init__(self):
         super().__init__(
-            name="PDF Fragmentation",
-            slug="pdf-fragmentation",
+            name="PDF Fragmentation Predictor",
+            slug="pdf-fragmentation-predictor",
             url=settings.service_url,
             summary=api_summary,
             description=api_description,
@@ -66,31 +72,69 @@ class MyService(Service):
         )
         self._logger = get_logger(settings)
 
+        # Import the model to the model store from a local model folder
+        modelPath = os.path.join(os.path.dirname(__file__), "..", "model/pdf_fragmentation_classifier.bentomodel")
+        try:
+            bentoml.models.import_model(modelPath)
+        except bentoml.exceptions.BentoMLException:
+            print("Model already exists in the model store - skipping import.")
+
+        # Load model
+        model_name = "pdf_fragmentation_classifier:latest"
+        self._model = bentoml.pytorch.load_model(model_name)
+        self._model.eval()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._model.to(device)
+
+    def combine_numpy(images, axis=0):
+        return np.concatenate(images, axis=axis)
+
+    def predict(self, pdf_file_data):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        loader = PDFPlumberLoader()
+        pdfFile = PDFFile.ofBytes(pdf_file_data, loader)
+
+        # Prepare dataset
+        transformer = TransformerService(transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor()
+        ]), torch.cat)
+
+        dataset = pdfFile.as_paired_dataset(transformer)
+        dataloader = DataLoader(dataset, batch_size=8, shuffle=False)
+
+        results = []
+        with torch.no_grad():
+            for image_pairs, idxs in dataloader:
+                image_pairs = image_pairs.to(device)
+                outputs = self._model(image_pairs)
+                preds = (outputs > 0.5).float().cpu().numpy()
+
+                for idx, pred in zip(idxs, preds):
+                    if float(pred) > 0:
+                        results.append(int(idx) + 1)
+
+        return results
+
     def process(self, data):
         try:
             # Extract the PDF file bytes from the incoming data
             raw_pdf = data["pdf"].data  # This gets the raw bytes of the PDF file
             self._logger.info("Successfully extracted PDF bytes from request")
 
-            # Load and process the PDF using PDFPlumberLoader
-            pdfLoader = PDFPlumberLoader()
-            self._logger.info("Loading PDF with PDFPlumberLoader")
+            results = []
             try:
-                pdf = PDFFile.ofBytes(raw_pdf, pdfLoader)
-            except Exception as e:
+                results = self.predict(raw_pdf)
+            except Exception:
                 self._logger.error("Error loading PDF:\n" + traceback.format_exc())
                 raise
 
-            # Apply here the fragmentation prediction and split the PDFs
-            json_prediction = json.dumps([
-                1, 3, 5
-            ]) # an array is enough to predict where to cut, the numbers are the pages after where we should cut.
-
-            self._logger.info("Successfully processed PDF Text Embedding")
+            self._logger.info("Successfully processed Fragmentation Predictor")
 
             # Return the result in the expected format
             return {
-                "result": TaskData(data=json_prediction, type=FieldDescriptionType.APPLICATION_JSON)
+                "result": TaskData(data=json.dumps(results), type=FieldDescriptionType.APPLICATION_JSON)
             }
 
         except KeyError as e:
@@ -106,7 +150,9 @@ class MyService(Service):
             self._logger.error(f"Error processing PDF: {str(e)}")
             raise
 
+
 service_service: ServiceService | None = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -187,6 +233,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Redirect to docs
 @app.get("/", include_in_schema=False)
