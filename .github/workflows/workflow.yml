@@ -54,6 +54,7 @@ on:
       # - main
       # - prod
       - mlops #test_purposes
+      - mlops_correct_pipeline
 
   pull_request:
 
