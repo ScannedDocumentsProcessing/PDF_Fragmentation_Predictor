@@ -51,7 +51,7 @@ class PDFPlumberLoader(PDFFileLoader):
                 break
             else:
                 raise ValueError(f"Unsupported filter: {filter_name}")
-        
+
         return raw
 
     def process(self, filename: str):
@@ -78,7 +78,6 @@ class PDFPlumberLoader(PDFFileLoader):
                     print("This PDF file is not a valid scanned PDF (multiple or no images per page)")
                     sys.exit(1)
         return pages
-
 
     def processBytes(self, pdf_data: bytes):
         return self.process(BytesIO(pdf_data))
