@@ -1,0 +1,35 @@
+stages:
+  prepare:
+    cmd: python3.10 src/prepare.py data/raw_data/jossef data/raw_data/tobacco800 data/prepared
+    deps:
+    - data/raw_data
+    - src/prepare.py
+    - src/services
+    - src/models
+    outs:
+    - data/prepared
+    
+  train:
+    cmd: python3.10 src/train.py data/prepared/train model
+    deps:
+    - src/train.py
+    - src/services
+    - src/models
+    - data/prepared/train
+    params:
+    - train
+    outs:
+    - model/pdf_fragmentation_classifier.bentomodel
+    plots:
+    - model/plots/training_history.png
+
+  evaluate:
+    cmd: python3.10 src/evaluate.py data/prepared/test model
+    deps:
+    - src/evaluate.py
+    - data/prepared/test
+    - model
+    metrics:
+    - evaluation/fragmentation_classification_report.json
+    plots:
+    - evaluation/fragmentation_confusion_matrix.png

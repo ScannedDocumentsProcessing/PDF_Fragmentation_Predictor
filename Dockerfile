@@ -1,23 +1,27 @@
 # Base image
-FROM python:3.11
+FROM python:3.10
 
 # Install all required packages to run the model
-# TODO: 1. Add any additional packages required to run your model
-# RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
-# RUN pip3 install opencv-python-headless==4.11.0.86
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Work directory
 WORKDIR /app
 
-# Copy requirements file
 COPY ./requirements.txt .
 COPY ./requirements-all.txt .
 
 # Install dependencies
-RUN pip install --requirement requirements-api.txt --requirement requirements-all.txt
+RUN pip install --requirement requirements.txt --requirement requirements-all.txt
 
 # Copy sources
 COPY src src
+
+# Copy model
+RUN mkdir -p model
+COPY ./model/pdf_fragmentation_classifier.bentomodel ./model/pdf_fragmentation_classifier.bentomodel
 
 # Environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}

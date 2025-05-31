@@ -7,6 +7,7 @@ from io import BytesIO
 import zlib
 import re
 
+
 class PDFPlumberLoader(PDFFileLoader):
 
     def ascii85_pdf_decode(self, data):
