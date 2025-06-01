@@ -163,15 +163,15 @@ jobs:
           path: ./model
 
       - name: Test Python app
-        uses: swiss-ai-center/common-code/.github/actions/test-python-app@main
+        uses: ./.github/actions/test-python-app
         with:
           python-app-path: .
           token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
-    needs: train-and-report # TODO add test
+    needs: test
     runs-on: ubuntu-latest
-    # TODO if: ${{ vars.RUN_CICD == 'true' && success() && github.ref == 'refs/heads/main' && (vars.DEPLOY_DEV == 'true' || vars.DEPLOY_PROD == 'true') }}
+    if: ${{ vars.RUN_CICD == 'true' && success() && github.ref == 'refs/heads/main' && (vars.DEPLOY_DEV == 'true' || vars.DEPLOY_PROD == 'true') }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -199,7 +199,7 @@ jobs:
   deploy-dev:
     needs: release
     runs-on: ubuntu-latest
-
+    if: ${{ vars.RUN_CICD == 'true' && success() && github.ref == 'refs/heads/main' && vars.DEPLOY_DEV == 'true' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
