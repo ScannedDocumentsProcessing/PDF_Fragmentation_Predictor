@@ -10,16 +10,16 @@ stages:
       nfiles: 1302
     - path: src/models
       hash: md5
-      md5: ea2ce086752b4a5e24676c4526f11ebf.dir
+      md5: fe0039a41aebb33582c5b2c6be10be5f.dir
       size: 14944
       nfiles: 10
     - path: src/prepare.py
       hash: md5
-      md5: 799ad663808790ffa2cc276ad7200a65
-      size: 4103
+      md5: e9f6575e80553481f4efb1f2b123d1c3
+      size: 4393
     - path: src/services
       hash: md5
-      md5: a071c02892d8556d647361a170cdf696.dir
+      md5: 926e2c653264ab43d0f5ae0e0396a667.dir
       size: 17625
       nfiles: 11
     outs:
@@ -38,12 +38,12 @@ stages:
       nfiles: 1046
     - path: src/models
       hash: md5
-      md5: ea2ce086752b4a5e24676c4526f11ebf.dir
+      md5: fe0039a41aebb33582c5b2c6be10be5f.dir
       size: 14944
       nfiles: 10
     - path: src/services
       hash: md5
-      md5: a071c02892d8556d647361a170cdf696.dir
+      md5: 926e2c653264ab43d0f5ae0e0396a667.dir
       size: 17625
       nfiles: 11
     - path: src/train.py
@@ -59,8 +59,8 @@ stages:
     outs:
     - path: model/pdf_fragmentation_classifier.bentomodel
       hash: md5
-      md5: 87c2bef4a961de34c03edd142db17614
-      size: 46574816
+      md5: fc37e095823d345c508918af31599a62
+      size: 46580332
     - path: model/plots/training_history.png
       hash: md5
       md5: 31b080d12a81d6e3b2c682b973cfdc36
@@ -75,8 +75,8 @@ stages:
       nfiles: 262
     - path: model
       hash: md5
-      md5: e2b0ad616b51eca07a18fe340aa723ce.dir
-      size: 46616957
+      md5: 7f193b42102b733535303e3422b56874.dir
+      size: 46622473
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
