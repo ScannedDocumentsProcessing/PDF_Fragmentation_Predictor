@@ -15,8 +15,12 @@ import random
 
 
 def createListOfDocuments(folder) -> list[list[str]]:
-    # TODO document this
-
+    """
+    Scan the given folder and return a list of documents; each document is represented by a
+    list of files. Each file is expected to be named in the format
+    <docName>_<pageNumber>.<extension>, where <docName> is the name of the document and
+    <pageNumber> is the page number of the document.
+    """
     files = [entry.path for entry in os.scandir(folder)]
     files.sort()
 

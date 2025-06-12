@@ -11,5 +11,4 @@ def client_fixture():
 
 def test_default_route(client: TestClient):
     response = client.get("/")
-    # TODO: Why doesn't it return a 302?
     assert response.status_code == 200

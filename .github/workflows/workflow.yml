@@ -45,7 +45,7 @@ env:
 
 # Allow one concurrent deployment
 concurrency:
-  group: pdf_fragmentation_predictor_workflow # TODO vérifier sur autres projets, ça doit correspondre au nom tout en haut
+  group: pdf_fragmentation_predictor_workflow
   cancel-in-progress: true
 
 on: 
